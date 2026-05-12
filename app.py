@@ -87,6 +87,109 @@ def load_scaler():
 model = load_model()
 scaler = load_scaler()
 
+
+# ============================================
+# AMBIL API KEY DARI SECRETS
+# ============================================
+try:
+    YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
+except:
+    YOUTUBE_API_KEY = None
+    st.warning("YouTube API Key tidak ditemukan. Fitur input link YouTube tidak tersedia.")
+
+# ============================================
+# FUNGSI BANTUAN
+# ============================================
+def extract_video_id(url):
+    patterns = [
+        r'(?:youtube\.com\/watch\?v=)([\w-]+)',
+        r'(?:youtu\.be\/)([\w-]+)',
+        r'(?:youtube\.com\/embed\/)([\w-]+)',
+        r'(?:youtube\.com\/v\/)([\w-]+)'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return None
+
+def parse_duration(duration_str):
+    import re
+    pattern = re.compile(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?')
+    match = pattern.match(duration_str)
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    return hours * 3600 + minutes * 60 + seconds
+
+def get_subscriber_count(channel_id, api_key):
+    url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channel_id}&key={api_key}"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        if data.get('items'):
+            return int(data['items'][0]['statistics'].get('subscriberCount', 0))
+        return 0
+    except:
+        return 0
+
+def get_video_data(video_id, api_key):
+    url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id={video_id}&key={api_key}"
+    
+    try:
+        response = requests.get(url)
+        data = response.json()
+        
+        if not data.get('items'):
+            return None, "Video tidak ditemukan"
+        
+        item = data['items'][0]
+        snippet = item['snippet']
+        statistics = item['statistics']
+        content_details = item['contentDetails']
+        
+        title = snippet.get('title', '')
+        description = snippet.get('description', '')
+        published_at = snippet.get('publishedAt', '')
+        channel_id = snippet.get('channelId', '')
+        
+        views = int(statistics.get('viewCount', 0))
+        likes = int(statistics.get('likeCount', 0))
+        comments = int(statistics.get('commentCount', 0))
+        
+        duration_str = content_details.get('duration', 'PT0S')
+        duration_seconds = parse_duration(duration_str)
+        
+        title_length = len(title)
+        hashtags_count = description.count('#')
+        
+        pub_date = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+        publish_hour = pub_date.hour
+        publish_day = pub_date.weekday()
+        
+        subscriber_count = get_subscriber_count(channel_id, api_key)
+        
+        video_data = {
+            'title': title,
+            'views': views,
+            'likes': likes,
+            'comments': comments,
+            'subscriber_count': subscriber_count,
+            'duration_seconds': duration_seconds,
+            'title_length': title_length,
+            'hashtags_count': hashtags_count,
+            'publish_hour': publish_hour,
+            'publish_day': publish_day,
+            'thumbnail': snippet.get('thumbnails', {}).get('high', {}).get('url', ''),
+            'channel_name': snippet.get('channelTitle', ''),
+            'video_url': f"https://youtube.com/watch?v={video_id}"
+        }
+        
+        return video_data, None
+        
+    except Exception as e:
+        return None, f"Error: {str(e)}"
+
 # ============================================
 # SIDEBAR
 # ============================================
