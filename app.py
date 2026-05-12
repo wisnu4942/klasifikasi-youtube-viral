@@ -336,16 +336,196 @@ with tab1:
 # ============================================
 with tab2:
 
-    st.markdown("""
-Masukkan link video YouTube untuk mengambil data video secara otomatis.
-""")
+    if YOUTUBE_API_KEY is None:
 
-    video_url = st.text_input(
-        "Link Video YouTube",
-        placeholder="https://youtube.com/watch?v=xxxx"
-    )
+        st.error("❌ YouTube API Key tidak ditemukan")
 
-    st.info("Fitur ini membutuhkan YouTube API Key.")
+    else:
+
+        st.markdown("## 🔗 Input Link YouTube")
+
+        with st.container(border=True):
+
+            video_url = st.text_input(
+                "Link Video YouTube",
+                placeholder="https://youtube.com/watch?v=xxxx"
+            )
+
+            st.caption(
+                "Sistem akan mengambil data video secara otomatis dari YouTube"
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if st.button(
+            "🔍 Ambil Data & Klasifikasi",
+            type="primary",
+            use_container_width=True
+        ):
+
+            if not video_url:
+
+                st.warning("Masukkan link video YouTube terlebih dahulu")
+
+            else:
+
+                with st.spinner("Mengambil data video dari YouTube..."):
+
+                    video_id = extract_video_id(video_url)
+
+                    if not video_id:
+
+                        st.error("Link YouTube tidak valid")
+
+                    else:
+
+                        video_data, error = get_video_data(
+                            video_id,
+                            YOUTUBE_API_KEY
+                        )
+
+                        if error:
+
+                            st.error(error)
+
+                        else:
+
+                            # =================================
+                            # PREVIEW VIDEO
+                            # =================================
+                            st.markdown("## 📺 Preview Video")
+
+                            preview1, preview2 = st.columns([1, 2])
+
+                            with preview1:
+
+                                st.image(
+                                    video_data['thumbnail'],
+                                    use_container_width=True
+                                )
+
+                            with preview2:
+
+                                st.markdown(
+                                    f"### {video_data['title']}"
+                                )
+
+                                st.write(
+                                    f"📺 Channel: {video_data['channel_name']}"
+                                )
+
+                                st.link_button(
+                                    "Buka di YouTube",
+                                    video_data['video_url']
+                                )
+
+                            # =================================
+                            # DETAIL DATA
+                            # =================================
+                            with st.expander(
+                                "📊 Detail Data Video",
+                                expanded=False
+                            ):
+
+                                d1, d2, d3 = st.columns(3)
+
+                                with d1:
+                                    st.metric(
+                                        "Views",
+                                        f"{video_data['views']:,}"
+                                    )
+
+                                    st.metric(
+                                        "Likes",
+                                        f"{video_data['likes']:,}"
+                                    )
+
+                                with d2:
+                                    st.metric(
+                                        "Comments",
+                                        f"{video_data['comments']:,}"
+                                    )
+
+                                    st.metric(
+                                        "Subscriber",
+                                        f"{video_data['subscriber_count']:,}"
+                                    )
+
+                                with d3:
+                                    st.metric(
+                                        "Durasi",
+                                        f"{video_data['duration_seconds']} detik"
+                                    )
+
+                                    st.metric(
+                                        "Hashtag",
+                                        video_data['hashtags_count']
+                                    )
+
+                            # =================================
+                            # KLASIFIKASI
+                            # =================================
+                            input_data = np.array([[
+                                video_data['views'],
+                                video_data['likes'],
+                                video_data['comments'],
+                                video_data['subscriber_count'],
+                                video_data['duration_seconds'],
+                                video_data['title_length'],
+                                video_data['hashtags_count'],
+                                video_data['publish_hour'],
+                                video_data['publish_day']
+                            ]])
+
+                            input_scaled = scaler.transform(input_data)
+
+                            prediction = model.predict(
+                                input_scaled
+                            )[0]
+
+                            probability = model.predict_proba(
+                                input_scaled
+                            )[0][1]
+
+                            st.markdown("---")
+                            st.markdown("## 🎯 Hasil Klasifikasi")
+
+                            r1, r2, r3 = st.columns(3)
+
+                            with r1:
+
+                                if prediction == 1:
+                                    st.success("🔥 VIRAL")
+                                else:
+                                    st.error("📉 TIDAK VIRAL")
+
+                            with r2:
+
+                                st.metric(
+                                    "Tingkat Keyakinan",
+                                    f"{probability*100:.1f}%"
+                                )
+
+                            with r3:
+
+                                st.metric(
+                                    "Model",
+                                    "LightGBM"
+                                )
+
+                            st.progress(float(probability))
+
+                            if prediction == 1:
+
+                                st.success(
+                                    "Video memiliki karakteristik viral."
+                                )
+
+                            else:
+
+                                st.info(
+                                    "Video memiliki karakteristik tidak viral."
+                                )
 
 # ============================================
 # FOOTER
