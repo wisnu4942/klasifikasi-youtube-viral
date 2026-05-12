@@ -21,6 +21,11 @@ st.set_page_config(
 # ============================================
 st.markdown("""
 <style>
+
+/* =========================
+   GLOBAL
+========================= */
+
 .main {
     padding-top: 1rem;
 }
@@ -29,38 +34,31 @@ st.markdown("""
     padding-top: 2rem;
 }
 
-.stMetric {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
+/* =========================
+   METRIC CARD
+========================= */
+
+[data-testid="stMetric"] {
+    border: 1px solid rgba(128,128,128,0.2);
+    padding: 18px;
+    border-radius: 14px;
+    background-color: rgba(128,128,128,0.08);
+    backdrop-filter: blur(6px);
 }
 
-.card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-.title-center {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.subtitle-center {
-    text-align: center;
-    color: gray;
-    margin-bottom: 30px;
-}
+/* =========================
+   INPUT WIDTH
+========================= */
 
 .stNumberInput,
 .stTextArea,
 .stSelectbox {
     max-width: 500px;
 }
+
+/* =========================
+   INPUT STYLE
+========================= */
 
 textarea {
     border-radius: 12px !important;
@@ -69,7 +67,41 @@ textarea {
 div[data-baseweb="select"] {
     border-radius: 12px !important;
 }
-            
+
+/* =========================
+   TITLE
+========================= */
+
+.title-center {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitle-center {
+    text-align: center;
+    opacity: 0.7;
+    margin-bottom: 30px;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.stButton > button {
+    border-radius: 12px;
+    height: 50px;
+    font-weight: 600;
+}
+
+/* =========================
+   EXPANDER
+========================= */
+
+.streamlit-expanderHeader {
+    font-size: 16px;
+    font-weight: 600;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
