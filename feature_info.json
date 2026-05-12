@@ -1,0 +1,18 @@
+{
+  "feature_names": [
+    "views",
+    "likes",
+    "comments",
+    "subscriber_count",
+    "duration_seconds",
+    "title_length",
+    "hashtags_count",
+    "publish_hour",
+    "publish_dayofweek"
+  ],
+  "n_features": 9,
+  "target_name": "is_viral",
+  "class_weight_0": 0.5128017556693489,
+  "class_weight_1": 20.02857142857143,
+  "scale_pos_weight": 39.05714285714286
+}
