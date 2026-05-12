@@ -55,6 +55,21 @@ st.markdown("""
     color: gray;
     margin-bottom: 30px;
 }
+
+.stNumberInput,
+.stTextArea,
+.stSelectbox {
+    max-width: 500px;
+}
+
+textarea {
+    border-radius: 12px !important;
+}
+
+div[data-baseweb="select"] {
+    border-radius: 12px !important;
+}
+            
 </style>
 """, unsafe_allow_html=True)
 
@@ -338,29 +353,9 @@ Masukkan link video YouTube untuk mengambil data video secara otomatis.
 st.markdown("---")
 
 st.markdown("""
-<div style='text-align:center; color:gray;'>
+<div style='text-align:center; color:gray; padding:10px;'>
     <p>
         YouTube Viral Classifier • LightGBM • Streamlit
     </p>
 </div>
-""")
-
-st.markdown("""
-<style>
-
-.stNumberInput,
-.stTextArea,
-.stSelectbox {
-    max-width: 500px;
-}
-
-textarea {
-    border-radius: 12px !important;
-}
-
-div[data-baseweb="select"] {
-    border-radius: 12px !important;
-}
-
-</style>
 """, unsafe_allow_html=True)
