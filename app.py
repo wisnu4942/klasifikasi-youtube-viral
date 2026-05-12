@@ -146,12 +146,16 @@ with tab1:
 
     st.markdown("## 📝 Form Data Video")
 
-    with st.container():
+    with st.container(border=True):
 
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2, gap="large")
 
+        # =========================
+        # KOLOM KIRI
+        # =========================
         with col1:
-            st.markdown("### 📈 Statistik Video")
+
+            st.markdown("### 📊 Statistik Video")
 
             views = st.number_input(
                 "Views",
@@ -181,10 +185,6 @@ with tab1:
                 step=50000
             )
 
-        with col2:
-
-            st.markdown("### ⚙️ Detail Konten")
-
             duration_minutes = st.number_input(
                 "Durasi Video (Menit)",
                 min_value=0.5,
@@ -192,35 +192,51 @@ with tab1:
                 step=0.5
             )
 
-            title = st.text_input(
+        # =========================
+        # KOLOM KANAN
+        # =========================
+        with col2:
+
+            st.markdown("### ⚙️ Detail Konten")
+
+            title = st.text_area(
                 "Judul Video",
-                placeholder="Contoh: Kisah Horor Tengah Malam..."
+                placeholder="Contoh: Kisah Horor Tengah Malam...",
+                height=120
             )
 
             description = st.text_area(
                 "Deskripsi Video",
-                placeholder="Tambahkan hashtag jika ada..."
+                placeholder="Tambahkan hashtag jika ada...",
+                height=120
             )
 
-            publish_hour = st.selectbox(
-                "Jam Upload",
-                list(range(0, 24)),
-                index=18
-            )
+            col_time1, col_time2 = st.columns(2)
 
-            publish_day_name = st.selectbox(
-                "Hari Upload",
-                [
-                    "Senin",
-                    "Selasa",
-                    "Rabu",
-                    "Kamis",
-                    "Jumat",
-                    "Sabtu",
-                    "Minggu"
-                ]
-            )
+            with col_time1:
+                publish_hour = st.selectbox(
+                    "Jam Upload",
+                    list(range(0, 24)),
+                    index=18
+                )
 
+            with col_time2:
+                publish_day_name = st.selectbox(
+                    "Hari Upload",
+                    [
+                        "Senin",
+                        "Selasa",
+                        "Rabu",
+                        "Kamis",
+                        "Jumat",
+                        "Sabtu",
+                        "Minggu"
+                    ]
+                )
+
+    # =========================
+    # PREPROCESS
+    # =========================
     duration_seconds = int(duration_minutes * 60)
     title_length = len(title)
     hashtags_count = description.count('#')
@@ -237,9 +253,16 @@ with tab1:
 
     publish_day = day_map[publish_day_name]
 
-    st.markdown("")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    if st.button("🎯 Klasifikasi Sekarang", use_container_width=True):
+    # =========================
+    # BUTTON
+    # =========================
+    if st.button(
+        "🎯 Klasifikasi Sekarang",
+        use_container_width=True,
+        type="primary"
+    ):
 
         input_data = np.array([[
             views,
@@ -320,4 +343,24 @@ st.markdown("""
         YouTube Viral Classifier • LightGBM • Streamlit
     </p>
 </div>
+""")
+
+st.markdown("""
+<style>
+
+.stNumberInput,
+.stTextArea,
+.stSelectbox {
+    max-width: 500px;
+}
+
+textarea {
+    border-radius: 12px !important;
+}
+
+div[data-baseweb="select"] {
+    border-radius: 12px !important;
+}
+
+</style>
 """, unsafe_allow_html=True)
