@@ -4,4 +4,4 @@ pandas
 scikit-learn
 joblib
 requests
-lightgbm
+xgboost
