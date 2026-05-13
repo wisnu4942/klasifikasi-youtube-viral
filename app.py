@@ -106,11 +106,16 @@ div[data-baseweb="select"] {
 """, unsafe_allow_html=True)
 
 # ============================================
+# KONSTANTA
+# ============================================
+THRESHOLD = 0.298  # Hasil tuning optimal
+
+# ============================================
 # LOAD MODEL DAN FEATURE INFO
 # ============================================
 @st.cache_resource
 def load_model():
-    return joblib.load("lightgbm_moderate.pkl")
+    return joblib.load("xgboost_model_final.pkl")  # XGBoost terbaik
 
 @st.cache_resource
 def load_scaler():
@@ -144,7 +149,7 @@ def extract_video_id(url):
         r'(?:youtu\.be\/)([\w-]+)',
         r'(?:youtube\.com\/embed\/)([\w-]+)',
         r'(?:youtube\.com\/v\/)([\w-]+)',
-        r'(?:youtube\.com\/shorts\/)([\w-]+)'  # tambahan untuk shorts
+        r'(?:youtube\.com\/shorts\/)([\w-]+)'
     ]
     for pattern in patterns:
         match = re.search(pattern, url)
@@ -211,7 +216,6 @@ def get_video_data(video_id, api_key):
         title_length = len(title)
         hashtags_count = description.count('#')
         
-        # Parse publish date with fallback
         try:
             pub_date = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
             publish_hour = pub_date.hour
@@ -260,11 +264,12 @@ with st.sidebar:
     st.markdown("""
 ### 📌 Informasi Model
 
-- **Algoritma:** LightGBM  
-- **Teknik Data:** SMOTE 0.1  
-- **Akurasi:** 96.81%  
-- **F1-Score:** 82.35%  
-- **AUC:** 98.69%
+- **Algoritma:** XGBoost  
+- **Penanganan Imbalance:** scale_pos_weight (39.06)
+- **Threshold:** 29.8%
+- **Akurasi:** 95.44%
+- **F1-Score:** 38.46%
+- **AUC:** 89.02%
 """)
     st.markdown("---")
     st.markdown("""
@@ -401,7 +406,6 @@ with tab1:
         type="primary",
         key="manual_predict"
     ):
-        # Input validation
         if title_length == 0:
             st.warning("⚠️ Harap isi judul video terlebih dahulu")
         else:
@@ -411,8 +415,10 @@ with tab1:
                 publish_hour, publish_day
             ]])
             input_scaled = scaler.transform(input_data)
-            prediction = model.predict(input_scaled)[0]
             probability = model.predict_proba(input_scaled)[0][1]
+            
+            # Klasifikasi dengan threshold 0.298
+            prediction = 1 if probability > THRESHOLD else 0
             
             st.markdown("---")
             st.markdown("## 📊 Hasil Klasifikasi")
@@ -426,7 +432,7 @@ with tab1:
             with col2:
                 st.metric("Tingkat Keyakinan", f"{probability*100:.1f}%")
             with col3:
-                st.metric("Model", "LightGBM")
+                st.metric("Threshold", f"{THRESHOLD*100:.0f}%")
             
             st.progress(float(probability))
             
@@ -510,8 +516,10 @@ with tab2:
                             ]])
                             
                             input_scaled = scaler.transform(input_data)
-                            prediction = model.predict(input_scaled)[0]
                             probability = model.predict_proba(input_scaled)[0][1]
+                            
+                            # Klasifikasi dengan threshold 0.298
+                            prediction = 1 if probability > THRESHOLD else 0
                             
                             st.markdown("---")
                             st.markdown("## 🎯 Hasil Klasifikasi")
@@ -525,7 +533,7 @@ with tab2:
                             with r2:
                                 st.metric("Tingkat Keyakinan", f"{probability*100:.1f}%")
                             with r3:
-                                st.metric("Model", "LightGBM")
+                                st.metric("Threshold", f"{THRESHOLD*100:.0f}%")
                             
                             st.progress(float(probability))
                             
@@ -541,10 +549,10 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align:center; color:gray; padding:10px;'>
     <p>
-        YouTube Viral Classifier • LightGBM + SMOTE 0.1 • Streamlit
+        YouTube Viral Classifier • XGBoost + scale_pos_weight • Threshold 29.8%
     </p>
     <p>
-        Akurasi: 96.81% | F1-Score: 82.35% | AUC: 98.69%
+        Akurasi: 95.44% | F1-Score: 38.46% | AUC: 89.02%
     </p>
 </div>
 """, unsafe_allow_html=True)
